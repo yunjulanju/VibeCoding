@@ -1,0 +1,360 @@
+<title>UE5 Auth Server — 프로젝트 요약</title>
+<style>
+  :root {
+    --bg: #f6f7f9;
+    --surface: #ffffff;
+    --surface-2: #eef1f5;
+    --border: #dde2ea;
+    --text: #1b2431;
+    --muted: #5b6676;
+    --accent: #2f5fe0;
+    --accent-soft: rgba(47, 95, 224, 0.10);
+    --ok: #1f9d55;
+    --ok-soft: rgba(31, 157, 85, 0.12);
+    --warn: #a86616;
+    --warn-soft: rgba(168, 102, 22, 0.12);
+    --danger: #c0392b;
+    --danger-soft: rgba(192, 57, 43, 0.12);
+    --code-bg: #10151f;
+    --code-text: #dfe6f2;
+    --code-muted: #7f8ea8;
+    --font-sans: system-ui, -apple-system, "Segoe UI", Roboto, "Noto Sans KR", sans-serif;
+    --font-mono: ui-monospace, "Cascadia Code", "SF Mono", "Consolas", monospace;
+    --shadow: 0 1px 2px rgba(16, 21, 31, 0.04), 0 4px 16px rgba(16, 21, 31, 0.05);
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #0e1117;
+      --surface: #161b24;
+      --surface-2: #1d232e;
+      --border: #2a323f;
+      --text: #e6ebf2;
+      --muted: #97a2b2;
+      --accent: #6f92ff;
+      --accent-soft: rgba(111, 146, 255, 0.14);
+      --ok: #48c78e;
+      --ok-soft: rgba(72, 199, 142, 0.14);
+      --warn: #e0a53d;
+      --warn-soft: rgba(224, 165, 61, 0.13);
+      --danger: #f2735f;
+      --danger-soft: rgba(242, 115, 95, 0.14);
+      --code-bg: #0a0e15;
+      --code-text: #dfe6f2;
+      --code-muted: #6b7a95;
+      --shadow: 0 1px 2px rgba(0, 0, 0, 0.3), 0 6px 20px rgba(0, 0, 0, 0.35);
+    }
+  }
+  :root[data-theme="light"] {
+    --bg: #f6f7f9; --surface: #ffffff; --surface-2: #eef1f5; --border: #dde2ea;
+    --text: #1b2431; --muted: #5b6676; --accent: #2f5fe0; --accent-soft: rgba(47, 95, 224, 0.10);
+    --ok: #1f9d55; --ok-soft: rgba(31, 157, 85, 0.12); --warn: #a86616; --warn-soft: rgba(168, 102, 22, 0.12);
+    --danger: #c0392b; --danger-soft: rgba(192, 57, 43, 0.12);
+    --code-bg: #10151f; --code-text: #dfe6f2; --code-muted: #7f8ea8;
+    --shadow: 0 1px 2px rgba(16, 21, 31, 0.04), 0 4px 16px rgba(16, 21, 31, 0.05);
+  }
+  :root[data-theme="dark"] {
+    --bg: #0e1117; --surface: #161b24; --surface-2: #1d232e; --border: #2a323f;
+    --text: #e6ebf2; --muted: #97a2b2; --accent: #6f92ff; --accent-soft: rgba(111, 146, 255, 0.14);
+    --ok: #48c78e; --ok-soft: rgba(72, 199, 142, 0.14); --warn: #e0a53d; --warn-soft: rgba(224, 165, 61, 0.13);
+    --danger: #f2735f; --danger-soft: rgba(242, 115, 95, 0.14);
+    --code-bg: #0a0e15; --code-text: #dfe6f2; --code-muted: #6b7a95;
+    --shadow: 0 1px 2px rgba(0, 0, 0, 0.3), 0 6px 20px rgba(0, 0, 0, 0.35);
+  }
+
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--font-sans);
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+  }
+  .wrap {
+    max-width: 860px;
+    margin: 0 auto;
+    padding: clamp(1.5rem, 4vw, 4rem) clamp(1rem, 4vw, 2rem) 4rem;
+  }
+
+  /* Header */
+  header { border-bottom: 1px solid var(--border); padding-bottom: 1.75rem; margin-bottom: 2rem; }
+  .eyebrow {
+    font-family: var(--font-mono);
+    font-size: 0.72rem;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin: 0 0 0.75rem;
+  }
+  h1 {
+    font-size: clamp(1.9rem, 5vw, 2.75rem);
+    line-height: 1.1;
+    letter-spacing: -0.02em;
+    margin: 0 0 0.6rem;
+    text-wrap: balance;
+  }
+  .lede { color: var(--muted); font-size: 1.05rem; margin: 0 0 1.25rem; max-width: 60ch; }
+  .chips { display: flex; flex-wrap: wrap; gap: 0.5rem; }
+  .chip {
+    font-family: var(--font-mono);
+    font-size: 0.78rem;
+    padding: 0.28rem 0.65rem;
+    border-radius: 6px;
+    background: var(--surface-2);
+    border: 1px solid var(--border);
+    color: var(--text);
+  }
+
+  /* Stat strip */
+  .stats {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+    gap: 0.85rem;
+    margin-bottom: 2.5rem;
+  }
+  .stat {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 1rem 1.1rem;
+    box-shadow: var(--shadow);
+  }
+  .stat .n {
+    font-size: 1.65rem;
+    font-weight: 650;
+    letter-spacing: -0.01em;
+    font-variant-numeric: tabular-nums;
+    display: flex;
+    align-items: baseline;
+    gap: 0.3rem;
+  }
+  .stat .n.ok { color: var(--ok); }
+  .stat .l {
+    font-family: var(--font-mono);
+    font-size: 0.7rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-top: 0.15rem;
+  }
+
+  section { margin-bottom: 2.5rem; }
+  h2 {
+    font-size: 1.25rem;
+    letter-spacing: -0.01em;
+    margin: 0 0 1.1rem;
+    padding-bottom: 0.5rem;
+    border-bottom: 1px solid var(--border);
+  }
+  h2 .idx { font-family: var(--font-mono); color: var(--accent); font-size: 0.9rem; margin-right: 0.55rem; }
+
+  /* Decision list */
+  .decisions { display: grid; gap: 0.7rem; }
+  .decision {
+    display: grid;
+    grid-template-columns: minmax(120px, 170px) 1fr;
+    gap: 1rem;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 0.9rem 1.1rem;
+  }
+  .decision dt {
+    font-family: var(--font-mono);
+    font-size: 0.8rem;
+    color: var(--muted);
+    letter-spacing: 0.02em;
+    align-self: center;
+  }
+  .decision dd { margin: 0; font-size: 0.95rem; }
+  .decision dd strong { font-weight: 640; }
+
+  /* Table */
+  .table-scroll { overflow-x: auto; border: 1px solid var(--border); border-radius: 10px; }
+  table { border-collapse: collapse; width: 100%; font-size: 0.9rem; min-width: 480px; }
+  thead th {
+    text-align: left;
+    font-family: var(--font-mono);
+    font-size: 0.7rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--muted);
+    padding: 0.7rem 1rem;
+    background: var(--surface-2);
+    border-bottom: 1px solid var(--border);
+  }
+  tbody td { padding: 0.7rem 1rem; border-bottom: 1px solid var(--border); vertical-align: middle; }
+  tbody tr:last-child td { border-bottom: none; }
+  td code, .path { font-family: var(--font-mono); font-size: 0.85rem; }
+  .verb {
+    font-family: var(--font-mono);
+    font-size: 0.72rem;
+    font-weight: 600;
+    padding: 0.2rem 0.5rem;
+    border-radius: 5px;
+    letter-spacing: 0.03em;
+  }
+  .verb.get { color: var(--accent); background: var(--accent-soft); }
+  .verb.post { color: var(--ok); background: var(--ok-soft); }
+  .verb.delete { color: var(--danger); background: var(--danger-soft); }
+  .lock { color: var(--muted); font-size: 0.8rem; font-family: var(--font-mono); }
+
+  /* Code block */
+  pre {
+    background: var(--code-bg);
+    color: var(--code-text);
+    font-family: var(--font-mono);
+    font-size: 0.82rem;
+    line-height: 1.7;
+    padding: 1.1rem 1.25rem;
+    border-radius: 10px;
+    overflow-x: auto;
+    margin: 0;
+    border: 1px solid var(--border);
+  }
+  pre .c { color: var(--code-muted); }
+  pre .a { color: #8fb3ff; }
+
+  /* Callout */
+  .callout {
+    display: flex;
+    gap: 0.85rem;
+    background: var(--warn-soft);
+    border: 1px solid var(--warn);
+    border-radius: 10px;
+    padding: 1rem 1.2rem;
+    font-size: 0.92rem;
+  }
+  .callout .ico { color: var(--warn); font-weight: 700; font-family: var(--font-mono); }
+  .callout strong { color: var(--warn); }
+  .callout code { font-family: var(--font-mono); font-size: 0.85rem; }
+
+  footer {
+    margin-top: 3rem;
+    padding-top: 1.5rem;
+    border-top: 1px solid var(--border);
+    color: var(--muted);
+    font-size: 0.82rem;
+    font-family: var(--font-mono);
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem 1.25rem;
+    justify-content: space-between;
+  }
+  a { color: var(--accent); }
+</style>
+
+<div class="wrap">
+  <header>
+    <p class="eyebrow">Project Summary · 2026-07-15</p>
+    <h1>UE5 Auth Server</h1>
+    <p class="lede">Unreal Engine 5 클라이언트를 위한 인증 백엔드. 회원가입 · 로그인 · 내 정보 조회 · 회원탈퇴를 JWT 토큰 기반으로 제공합니다.</p>
+    <div class="chips">
+      <span class="chip">FastAPI</span>
+      <span class="chip">MySQL 8.4.9</span>
+      <span class="chip">SQLAlchemy 2.0</span>
+      <span class="chip">JWT · HS256</span>
+      <span class="chip">bcrypt</span>
+    </div>
+  </header>
+
+  <div class="stats">
+    <div class="stat"><div class="n ok">14<span style="font-size:1rem;color:var(--muted);">/14</span></div><div class="l">Tests passed</div></div>
+    <div class="stat"><div class="n">5</div><div class="l">API endpoints</div></div>
+    <div class="stat"><div class="n" style="font-family:var(--font-mono);font-size:1.3rem;">3747b1c</div><div class="l">Initial commit</div></div>
+    <div class="stat"><div class="n ok" style="font-size:1.3rem;">구동 완료</div><div class="l">MySQL 8.4.9 검증</div></div>
+  </div>
+
+  <section>
+    <h2><span class="idx">01</span>확정 설계 결정</h2>
+    <dl class="decisions">
+      <div class="decision"><dt>프레임워크</dt><dd><strong>FastAPI</strong> + SQLAlchemy 2.0 (동기) · 자동 Swagger 문서 <code>/docs</code></dd></div>
+      <div class="decision"><dt>데이터베이스</dt><dd><strong>MySQL</strong> (PyMySQL 드라이버) · 로컬은 docker-compose</dd></div>
+      <div class="decision"><dt>인증</dt><dd><strong>JWT 단일 access 토큰</strong> (HS256), payload <code>sub</code> = user id</dd></div>
+      <div class="decision"><dt>회원가입 입력</dt><dd>이메일 + 아이디(username) + 비밀번호(8자 이상)</dd></div>
+      <div class="decision"><dt>로그인 식별자</dt><dd><strong>이메일로만</strong> 로그인</dd></div>
+      <div class="decision"><dt>회원탈퇴</dt><dd><strong>Soft delete</strong> (<code>is_deleted</code> / <code>deleted_at</code>) · 탈퇴 이메일·아이디 재사용 불가</dd></div>
+      <div class="decision"><dt>범위 제외</dt><dd>이메일 인증(가입 메일 발송), Alembic 마이그레이션 — 추후 확장</dd></div>
+    </dl>
+  </section>
+
+  <section>
+    <h2><span class="idx">02</span>API 엔드포인트</h2>
+    <div class="table-scroll">
+      <table>
+        <thead>
+          <tr><th>메서드</th><th>경로</th><th>인증</th><th>설명</th></tr>
+        </thead>
+        <tbody>
+          <tr><td><span class="verb post">POST</span></td><td class="path">/auth/signup</td><td class="lock">—</td><td>회원가입 · 중복 시 409</td></tr>
+          <tr><td><span class="verb post">POST</span></td><td class="path">/auth/login</td><td class="lock">—</td><td>로그인 → access_token 발급</td></tr>
+          <tr><td><span class="verb get">GET</span></td><td class="path">/users/me</td><td class="lock">Bearer</td><td>내 프로필 조회</td></tr>
+          <tr><td><span class="verb delete">DELETE</span></td><td class="path">/users/me</td><td class="lock">Bearer</td><td>회원탈퇴 (soft delete) → 204</td></tr>
+          <tr><td><span class="verb get">GET</span></td><td class="path">/health</td><td class="lock">—</td><td>헬스체크</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <section>
+    <h2><span class="idx">03</span>검증 결과</h2>
+    <div class="table-scroll">
+      <table>
+        <thead><tr><th>시나리오</th><th>기대</th></tr></thead>
+        <tbody>
+          <tr><td>회원가입 (비밀번호·해시 미노출)</td><td class="path">201</td></tr>
+          <tr><td>이메일 / 아이디 중복 가입</td><td class="path">409</td></tr>
+          <tr><td>로그인 성공 → 토큰 발급</td><td class="path">200</td></tr>
+          <tr><td>잘못된 비밀번호 · 존재하지 않는 계정</td><td class="path">401</td></tr>
+          <tr><td>토큰 없이 / 무효 토큰으로 <code>/users/me</code></td><td class="path">401</td></tr>
+          <tr><td>회원탈퇴</td><td class="path">204</td></tr>
+          <tr><td>탈퇴 후 로그인 · 기존 토큰 재사용</td><td class="path">401</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <section>
+    <h2><span class="idx">04</span>로컬 실행</h2>
+    <p style="color:var(--muted);margin:0 0 1rem;font-size:0.95rem;">현재 로컬 설치된 <strong style="color:var(--text)">MySQL 8.4.9</strong>(root @ localhost:3306, DB <code style="font-family:var(--font-mono)">authdb</code>)에 연결해 구동을 검증했습니다.</p>
+    <pre><span class="c"># 1) 의존성 설치 (venv 이미 생성됨)</span>
+pip install -r requirements.txt
+pip install cryptography   <span class="c"># MySQL 8 caching_sha2_password 인증에 필요</span>
+
+<span class="c"># 2) 환경 변수 (.env — gitignore 됨)</span>
+DATABASE_URL=mysql+pymysql://root:****@localhost:3306/authdb
+JWT_SECRET_KEY=&lt;랜덤 값&gt;
+
+<span class="c"># 3) 서버 실행 (authdb 는 최초 1회 생성 필요)</span>
+uvicorn app.main:app --reload   <span class="c"># → http://localhost:8000/docs</span>
+
+<span class="c"># 테스트 (SQLite 사용, MySQL 불필요)</span>
+pytest</pre>
+  </section>
+
+  <section>
+    <h2><span class="idx">05</span>UE5 연동</h2>
+    <p style="color:var(--muted);margin:0 0 1rem;font-size:0.95rem;">UE5 <code style="font-family:var(--font-mono)">HttpModule</code> 로 JSON 을 주고받습니다. 로그인 응답의 토큰을 저장한 뒤, 보호된 요청 헤더에 첨부합니다.</p>
+    <pre><span class="a">Req</span>->SetURL(TEXT(<span class="c">"http://localhost:8000/users/me"</span>));
+<span class="a">Req</span>->SetVerb(TEXT(<span class="c">"GET"</span>));
+<span class="a">Req</span>->SetHeader(TEXT(<span class="c">"Authorization"</span>),
+    FString::Printf(TEXT(<span class="c">"Bearer %s"</span>), *AccessToken));</pre>
+  </section>
+
+  <div class="callout">
+    <span class="ico">!</span>
+    <div>
+      <strong>남은 정리 항목</strong>
+      <ul style="margin:0.5rem 0 0;padding-left:1.1rem;">
+        <li><code>cryptography</code> 를 <code>requirements.txt</code> 에 추가 (MySQL 8 사용 시 필요) — 현재 venv에만 설치됨</li>
+        <li>스모크 테스트로 남은 <code>test@example.com</code> 계정 정리 여부 결정</li>
+        <li>운영 배포 시 <code>JWT_SECRET_KEY</code> 는 안전한 랜덤 값 유지</li>
+      </ul>
+    </div>
+  </div>
+
+  <footer>
+    <span>UE5 Auth Server · FastAPI + MySQL + JWT</span>
+    <span>브랜치 master · 커밋 3747b1c</span>
+  </footer>
+</div>
