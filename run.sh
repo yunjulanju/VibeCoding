@@ -1,19 +1,16 @@
 #!/usr/bin/env bash
 # UE5 Auth Server 실행 스크립트 (Linux/Ubuntu)
 # 사용법: 프로젝트 루트에서  ./run.sh
-#   (기본) 코드 변경 시 자동 재시작(--reload) 개발 모드로 실행
-#   --no-reload : --reload 없이 실행 (host 0.0.0.0, 배포/외부접속용)
+#   uvicorn app.main:app --host 0.0.0.0 (외부접속 허용) 으로 서버 실행
 #   --no-db     : docker MySQL 기동/대기 건너뛰기 (DB가 이미 떠 있을 때)
 set -euo pipefail
 
 cd "$(dirname "$0")"
 
 NO_DB=0
-NO_RELOAD=0
 for arg in "$@"; do
     case "$arg" in
         --no-db)     NO_DB=1 ;;
-        --no-reload) NO_RELOAD=1 ;;
         *) echo "알 수 없는 옵션: $arg"; exit 1 ;;
     esac
 done
@@ -86,8 +83,4 @@ fi
 
 # 4) 서버 실행
 echo -e "\033[36m[4/4] 서버 시작 → http://localhost:8000  (문서: /docs)\033[0m"
-if [ "$NO_RELOAD" -eq 1 ]; then
-    uvicorn app.main:app --host 0.0.0.0 --port 8000
-else
-    uvicorn app.main:app --reload
-fi
+uvicorn app.main:app --host 0.0.0.0
